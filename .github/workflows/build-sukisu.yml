@@ -404,11 +404,10 @@ jobs:
           echo "IDENTITY_STATUS=Applied ($DEVICE_CODENAME)"
         } >> "$GITHUB_ENV"
 
-    - name: Fix task_mmu unused variable error
+    - name: Precision Fix for task_mmu
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
-        # 删掉 task_mmu.c 里的 struct vm_area_struct *vma;
-        sed -i '/struct vm_area_struct \*vma;/d' common/fs/proc/task_mmu.c
+        sed -i '1803s/struct vm_area_struct \*vma;\/\/\*/\/* struct vm_area_struct \*vma; *\//' common/fs/proc/task_mmu.c
 
     - name: Build Kernel
       working-directory: ${{ env.KERNEL_ROOT }}

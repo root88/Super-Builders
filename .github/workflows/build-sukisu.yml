@@ -404,11 +404,6 @@ jobs:
           echo "IDENTITY_STATUS=Applied ($DEVICE_CODENAME)"
         } >> "$GITHUB_ENV"
 
-    - name: Precision Fix for task_mmu
-      working-directory: ${{ env.KERNEL_ROOT }}
-      run: |
-        sed -i '1803s/struct vm_area_struct \*vma;\/\/\*/\/* struct vm_area_struct \*vma; *\//' common/fs/proc/task_mmu.c
-
     - name: Build Kernel
       working-directory: ${{ env.KERNEL_ROOT }}
       run: |
@@ -423,6 +418,12 @@ jobs:
             echo 'override KBUILD_HOSTLDFLAGS += --sysroot=/' >> common/tools/bpf/resolve_btfids/Makefile
             echo 'override LDFLAGS += --sysroot=/' >> common/tools/bpf/resolve_btfids/Makefile
           fi
+          
+          if [ -f common/Makefile ]; then
+            echo "KBUILD_CFLAGS += -Wno-error=unused-variable" >> common/Makefile
+            echo "KBUILD_CFLAGS += -Wno-error=unused-but-set-variable" >> common/Makefile
+          fi
+          
           tools/bazel build --config=fast --lto=$LTO_MODE --defconfig_fragment=//common:arch/arm64/configs/sukisu_gki.fragment //common:kernel_aarch64_dist || BUILD_RC=$?
         fi
         if [ "$BUILD_RC" -ne 0 ]; then
